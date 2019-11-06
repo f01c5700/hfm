@@ -39,7 +39,6 @@ func neuter(next http.Handler) http.Handler {
 	})
 }
 
-// upload logic
 func upload(w http.ResponseWriter, r *http.Request) {
 	log.Print(r.Method)
 	if r.Method != "POST" {
@@ -49,7 +48,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(MaxDataSize)
 	if err != nil {
-		log.Print(err)
+		w.WriteHeader(403)
 		return
 	}
 
@@ -61,7 +60,6 @@ func upload(w http.ResponseWriter, r *http.Request) {
 
 	fileData, handler, err := r.FormFile("fileData")
 	if err != nil {
-		log.Print(err)
 		w.WriteHeader(403)
 		return
 	}
@@ -69,10 +67,6 @@ func upload(w http.ResponseWriter, r *http.Request) {
 
 	fullPath := strings.Split(filePath, "/")
 	path := strings.Join(fullPath[:len(fullPath)-1], "/")
-	//name := fullPath[len(fullPath) - 1]
-
-	log.Print(fullPath)
-	log.Print(Root + path)
 
 	err = os.MkdirAll(Root+path, 0777)
 	if err != nil {
@@ -92,9 +86,8 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Print(handler.Filename)
 	if _, err := fmt.Fprintf(w, "%v", handler.Header); err != nil {
 		w.WriteHeader(200)
-		log.Print(handler.Filename)
+		return
 	}
 }
